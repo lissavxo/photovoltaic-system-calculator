@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        #box{
+            display: flex;
+            flex-direction: column;
+            border-style: outset ;
+            padding: 10px;
+            width:fit-content;
+            
+        }
+        #box div{
+            flex-basis: 30px;
+        }
+        #box div button{
+            align-self: flex-end;
+            float: right;
+            background-color:white;
+            height: 30px;
+            width: 100px;
+        }
+        #note{
+        }
+        #result{
+            display: flex;
+            flex-direction: column;
+            border-style: groove;
+        }
+        #result div {
+
+            padding-left: 10px;
+        }
+        #result-title{
+            
+            border-bottom: groove ;
+        }
+    </style>
+</head>
+<body>
+    <div id="box">
+
+        <div>
+            <h2>Dimensionamento Sistema Fotovoltaico</h2>
+        </div>
+        
+        <div>
+            <label>Taixa de consumo padrão: <span id="quote"></span></label>
+        </div>
+        <div>
+            <label>Consumo por mes (R$):</label>
+            <input type="number" id="consumeMonthRs" placeholder="RS">
+        </div>
+        <div>
+            <label> Tipo de ligação:</label>
+            <select id="connectionType">
+                <option value="30">Monofasica</option>
+                <option value="50">Bifasica</option> 
+                <option value="100">Trifasica</option>                                                       
+            </select>
+        </div>
+    
+        <div>
+            <label> Tipo de residencia:</label>
+            <select id="homeType">
+                <option value="265">Residencial</option>
+                <option value="330">Rural</option> 
+                <option value="330">Comercial</option>                                                       
+            </select>
+        </div>
+    
+        <div>
+            <label>Zona da residencia:</label>
+            <select id="hps">
+                <option value="4">Sul/Sudeste</option>
+                <option value="6">Norte/Nordeste</option>                                                      
+            </select>
+        </div>
+        <div id="result">
+            <div id="result-title" >
+                <h3>Resultado</h3>
+            </div>
+            <div>
+                <p>Quantidade de paineis: <span  id="painels"></span> </p>
+                <p>Custo aproximado do investimneto: <span  id="rent"></span> </p>
+            </div>
+        </div>
+        <div id="note">
+            <span id="erro" style="color:red"></span>
+        </div>
+        <div>
+            <button  onclick="DoCalc()" >Calcular</button>
+            <span id="cancelar" ></span>
+        </div>
+    </div>
+
+    <script>
+        console.log(document)
+        const quote = 0.77
+        document.getElementById('quote').innerHTML = quote
+        const DoCalc = function (){
+            // Definição de varáveis
+            const connectionType = document.getElementById('connectionType').value
+            let consumeMonthKwt = document.getElementById('consumeMonthRs').value 
+            const hps = document.getElementById('hps').value //hps (horario sol pico)
+            const homeType = document.getElementById('homeType').value
+            let painelValue = 0
+            if ( homeType == 265){
+                painelValue = 650
+            } else{
+                painelValue = 850
+            }
+            console.log(consumeMonthKwt)
+            console.log(connectionType)
+            console.log(painelValue)
+            console.log(hps)
+
+
+            if (!!validateParams({
+                consumeMonthKwt,
+                connectionType,
+                homeType,
+                painelValue,
+                hps
+            })){
+                const rendimento = 0.8
+                consumeMonthKwt = (consumeMonthKwt/quote)- connectionType
+                consumeMonthKwt = Math.round(consumeMonthKwt/30)
+                // potencia kw pico
+                let powerKwp =  (consumeMonthKwt) / (hps * rendimento) 
+                // quantidade de paineis 
+                powerKwp = Math.round(powerKwp*1000)
+                console.log(consumeMonthKwt)
+                console.log(powerKwp)
+                const painels = Math.ceil(powerKwp / homeType)
+                
+                const finalInstrumetalValue = (painels*painelValue)+8000
+                const finalValue = finalInstrumetalValue + (finalInstrumetalValue*0.8)
+                console.log(painels,finalInstrumetalValue,finalValue)
+                document.getElementById('painels').innerText = painels
+                document.getElementById('rent').innerText = finalValue
+
+                document.getElementById('cancelar').innerHTML = '<button onclick="clearForm()" >Limpar</button>'
+            }
+        }
+        const clearForm = function(){
+            connectionType = document.getElementById('connectionType').value = ''
+            consumeMonthKwt = document.getElementById('consumeMonthRs').value = ''
+            homeType = document.getElementById('homeType').value = ''
+            hps = document.getElementById('hps').value = '' //hps (horario sol pico)
+            document.getElementById('erro').innerHTML = ''
+            document.getElementById('painels').innerHTML = ''
+        
+        }
+        const validateParams = function(params) {
+
+            if (params.consumeMonthKwt &&
+                params.connectionType &&
+                params.painelValue &&
+                params.hps){
+                    return true
+                }
+            else{
+                console.log("lissa")
+                document.getElementById('erro').innerHTML = "Preencha todos os campos!"
+                return false
+            }
+        }
+    </script>
+</body>
+</html>
