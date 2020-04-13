@@ -49,12 +49,12 @@
         
         <div>
             <label>Fornecedor de energia elétrica:</label>
-            <select id="quote-provider">
+            <select id="quoteProvider">
                 <option value="copel">Copel Distribuição</option>
                 <option value="other">Outro</option>                                                   
             </select>
             <label>R$</label>
-            <input type="number" id="quote-value" value="0.77">
+            <input type="number" id="quoteValue" value="0.77">
         </div>
         <div>
             <label>Consumo por mes:</label>
@@ -107,20 +107,20 @@
     </div>
 
     <script>
-        document.getElementById('quote-provider').onclick = () =>{
-            if(document.getElementById('quote-provider').value == "other"){
-                document.getElementById('quote-value').value = ''
-            }else if (document.getElementById('quote-provider').value == "copel"){
-                document.getElementById('quote-value').value = 0.77
+        document.getElementById('quoteProvider').onclick = () =>{
+            if(document.getElementById('quoteProvider').value == "other"){
+                document.getElementById('quoteValue').value = ''
+            }else if (document.getElementById('quoteProvider').value == "copel"){
+                document.getElementById('quoteValue').value = 0.77
             }
         }
 
         document.getElementById('consumeMonthRs').onchange = () => {
-            const result = Math.round(document.getElementById('consumeMonthRs').value / document.getElementById('quote-value').value)
+            const result = Math.round(document.getElementById('consumeMonthRs').value / document.getElementById('quoteValue').value)
             document.getElementById('consumeMonthKwh').value = result
         }
         document.getElementById('consumeMonthKwh').onchange = () => {
-            const result =  document.getElementById('consumeMonthKwh').value * document.getElementById('quote-value').value
+            const result =  document.getElementById('consumeMonthKwh').value * document.getElementById('quoteValue').value
             document.getElementById('consumeMonthRs').value =  parseFloat(result.toFixed(2));
 
         }
@@ -170,10 +170,12 @@
             document.getElementById('consumeMonthRs').value = ''
             document.getElementById('consumeMonthKwh').value = ''
             document.getElementById('homeType').value = ''
-            document.getElementById('hsp').value = '' //hsp (horario sol pico)
+            document.getElementById('hsp').value = '' 
             document.getElementById('error').innerHTML = ''
             document.getElementById('painels').innerHTML = ''
-            document.getElementById('rent').value = ''
+            document.getElementById('rent').innerHTML = ''
+            document.getElementById('quoteProvider').value = ''
+            document.getElementById('quoteValue').value = ''
         
         }
         const validateParams = function(params) {
