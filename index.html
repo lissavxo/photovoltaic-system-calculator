@@ -48,11 +48,20 @@
         </div>
         
         <div>
-            <label>Taixa de consumo padrão: <span id="quote"></span></label>
+            <label>Fornecedor de energia elétrica:</label>
+            <select id="quote-provider">
+                <option value="copel">Copel Distribuição</option>
+                <option value="other">Outro</option>                                                   
+            </select>
+            <label>R$</label>
+            <input type="number" id="quote-value" value="0.77">
         </div>
         <div>
-            <label>Consumo por mes (R$):</label>
-            <input type="number" id="consumeMonthRs" placeholder="RS">
+            <label>Consumo por mes:</label>
+            <label>R$</label>
+            <input type="number" id="consumeMonthRs" value="">
+            <label>Kw/h</label>
+            <input type="number" id="consumeMonthKwh" value="">
         </div>
         <div>
             <label> Tipo de ligação:</label>
@@ -74,7 +83,7 @@
     
         <div>
             <label>Zona da residencia:</label>
-            <select id="hps">
+            <select id="hsp">
                 <option value="4">Sul/Sudeste</option>
                 <option value="6">Norte/Nordeste</option>                                                      
             </select>
@@ -88,71 +97,83 @@
                 <p>Custo aproximado do investimneto: <span  id="rent"></span> </p>
             </div>
         </div>
-        <div id="note">
-            <span id="erro" style="color:red"></span>
+        <div>
+            <span id="error" style="color:red;"></span>
         </div>
         <div>
             <button  onclick="DoCalc()" >Calcular</button>
-            <span id="cancelar" ></span>
+            <span id="clear" ></span>
         </div>
     </div>
 
     <script>
-        console.log(document)
-        const quote = 0.77
-        document.getElementById('quote').innerHTML = quote
+        document.getElementById('quote-provider').onclick = () =>{
+            if(document.getElementById('quote-provider').value == "other"){
+                document.getElementById('quote-value').value = ''
+            }else if (document.getElementById('quote-provider').value == "copel"){
+                document.getElementById('quote-value').value = 0.77
+            }
+        }
+
+        document.getElementById('consumeMonthRs').onchange = () => {
+            const result = Math.round(document.getElementById('consumeMonthRs').value / document.getElementById('quote-value').value)
+            document.getElementById('consumeMonthKwh').value = result
+        }
+        document.getElementById('consumeMonthKwh').onchange = () => {
+            const result =  document.getElementById('consumeMonthKwh').value * document.getElementById('quote-value').value
+            document.getElementById('consumeMonthRs').value =  parseFloat(result.toFixed(2));
+
+        }
         const DoCalc = function (){
             // Definição de varáveis
             const connectionType = document.getElementById('connectionType').value
-            let consumeMonthKwt = document.getElementById('consumeMonthRs').value 
-            const hps = document.getElementById('hps').value //hps (horario sol pico)
+            let consumeMonthKwt = document.getElementById('consumeMonthKwh').value 
+            const hsp = document.getElementById('hsp').value //hsp (horario sol pico)
             const homeType = document.getElementById('homeType').value
+            let painels = 0
+            const rateWork = 0.8
             let painelValue = 0
+            let powerKwp = 0
+            const yeld = 0.8
+            const costTools = 8000
+
             if ( homeType == 265){
                 painelValue = 650
             } else{
                 painelValue = 850
             }
-            console.log(consumeMonthKwt)
-            console.log(connectionType)
-            console.log(painelValue)
-            console.log(hps)
-
 
             if (!!validateParams({
                 consumeMonthKwt,
                 connectionType,
                 homeType,
                 painelValue,
-                hps
+                hsp
             })){
-                const rendimento = 0.8
-                consumeMonthKwt = (consumeMonthKwt/quote)- connectionType
-                consumeMonthKwt = Math.round(consumeMonthKwt/30)
-                // potencia kw pico
-                let powerKwp =  (consumeMonthKwt) / (hps * rendimento) 
-                // quantidade de paineis 
+                consumeMonthKwt = consumeMonthKwt- connectionType
+                consumeMonthKwt = Math.round(consumeMonthKwt/30) // month to day
+                powerKwp =  (consumeMonthKwt) / (hsp * yeld) 
                 powerKwp = Math.round(powerKwp*1000)
-                console.log(consumeMonthKwt)
-                console.log(powerKwp)
-                const painels = Math.ceil(powerKwp / homeType)
-                
-                const finalInstrumetalValue = (painels*painelValue)+8000
-                const finalValue = finalInstrumetalValue + (finalInstrumetalValue*0.8)
-                console.log(painels,finalInstrumetalValue,finalValue)
+                // quantidade de paineis 
+                painels = Math.ceil(powerKwp / homeType)
+
+                const finalInstrumetalValue = (painels*painelValue)+costTools
+                const finalValue = finalInstrumetalValue + (finalInstrumetalValue*rateWork)
+            
                 document.getElementById('painels').innerText = painels
                 document.getElementById('rent').innerText = finalValue
-
-                document.getElementById('cancelar').innerHTML = '<button onclick="clearForm()" >Limpar</button>'
+                document.getElementById('clear').innerHTML = '<button onclick="clearForm()" >Limpar</button>'
             }
         }
         const clearForm = function(){
-            connectionType = document.getElementById('connectionType').value = ''
-            consumeMonthKwt = document.getElementById('consumeMonthRs').value = ''
-            homeType = document.getElementById('homeType').value = ''
-            hps = document.getElementById('hps').value = '' //hps (horario sol pico)
-            document.getElementById('erro').innerHTML = ''
+            document.getElementById('connectionType').value = ''
+            document.getElementById('consumeMonthRs').value = ''
+            document.getElementById('consumeMonthKwh').value = ''
+            document.getElementById('homeType').value = ''
+            document.getElementById('hsp').value = '' //hsp (horario sol pico)
+            document.getElementById('error').innerHTML = ''
             document.getElementById('painels').innerHTML = ''
+            document.getElementById('rent').value = ''
         
         }
         const validateParams = function(params) {
@@ -160,12 +181,14 @@
             if (params.consumeMonthKwt &&
                 params.connectionType &&
                 params.painelValue &&
-                params.hps){
+                params.hsp){
                     return true
                 }
             else{
-                console.log("lissa")
-                document.getElementById('erro').innerHTML = "Preencha todos os campos!"
+                document.getElementById('error').innerHTML = "Preencha todos os campos!"
+                setTimeout(()=>{
+                    document.getElementById('error').innerHTML = ""
+                }, 4000)
                 return false
             }
         }
